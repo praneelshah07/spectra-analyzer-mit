@@ -26,7 +26,7 @@ if uploaded_file is not None:
     wavelength = 10000 / wavenumber  # in microns
 
     # Plot the spectra
-    target_spectra = []
+    target_spectra = np.array([])  # Initialize as an empty array
     for smiles, spectra in data[['SMILES', 'Normalized_Spectra_Intensity']].values:
         if smiles == 'C':
             target_spectra = spectra
@@ -34,7 +34,7 @@ if uploaded_file is not None:
             ax.fill_between(wavelength, 0, spectra, color="k", alpha=0.01)
     
     # Highlight the target spectrum (CH$_4$)
-    if target_spectra != []:
+    if target_spectra.size > 0:  # Check if target_spectra is not empty
         ax.fill_between(wavelength, 0, target_spectra, color="r", alpha=0.5, label="CH$_4$")
 
     # Customize plot axes and ticks
