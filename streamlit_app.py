@@ -93,16 +93,6 @@ if data is not None:
     data['Raw_Spectra_Intensity'] = data['Raw_Spectra_Intensity'].apply(np.array)
     data['Normalized_Spectra_Intensity'] = data['Raw_Spectra_Intensity'].apply(lambda x: x / max(x))
 
-    # Preview the dataframe to ensure data is loaded correctly
-    st.write(data.head())
-
-
-
-
-
-
-    
-
     # Select SMILES for molecules you want to highlight
     unique_smiles = data['SMILES'].unique()
     selected_smiles = st.multiselect('Select molecules by SMILES to highlight:', unique_smiles)
