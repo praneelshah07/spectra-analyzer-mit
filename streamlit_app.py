@@ -93,8 +93,20 @@ if data is not None:
     data['Raw_Spectra_Intensity'] = data['Raw_Spectra_Intensity'].apply(np.array)
     data['Normalized_Spectra_Intensity'] = data['Raw_Spectra_Intensity'].apply(lambda x: x / max(x))
 
-    # Drop unnecessary columns (InChi Code, inchikey, and spectra data)
-    display_data = data.drop(columns=['InChI Code', 'inchikey', 'Produced by life', 'REF for life' 'Raw_Spectra_Intensity'])
+# Available columns in the DataFrame
+    available_columns = data.columns
+
+    # List of columns to drop (only drop them if they exist in the DataFrame)
+    columns_to_drop = ['InChi Code', 'inchikey', 'Raw_Spectra_Intensity', 'Normalized_Spectra_Intensity']
+
+    # Filter out columns that exist in the DataFrame
+    columns_to_drop = [col for col in columns_to_drop if col in available_columns]
+
+    # Drop only the existing columns
+    if columns_to_drop:
+        display_data = data.drop(columns=columns_to_drop)
+    else:
+        display_data = data
 
     # Preview the dataframe with excluded columns
     st.write("Data Preview (excluding InChi Code, inchikey, and spectra columns):")
