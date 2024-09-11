@@ -88,6 +88,26 @@ if uploaded_file is not None:
 
 # Check if data exists (either preloaded or uploaded)
 if data is not None:
+    # Strip whitespace from column names
+    data.columns = data.columns.str.strip()
+
+    # Display available column names for debugging purposes
+    st.write("Available Columns in DataFrame:", data.columns)
+
+    # Specify the columns you want to display
+    columns_to_display = ["Formula", "IUPAC chemical name", "Molecular Weight"]
+
+    # Filter to display only the specified columns
+    available_columns = [col for col in columns_to_display if col in data.columns]
+
+    if available_columns:
+        display_data = data[available_columns]
+        # Show the filtered dataframe
+        st.write("Data Preview with selected columns:")
+        st.dataframe(display_data)
+    else:
+        st.error("The specified columns do not exist in the data.")
+    
     # Convert JSON string to lists and normalize the spectra
     data['Raw_Spectra_Intensity'] = data['Raw_Spectra_Intensity'].apply(json.loads)
     data['Raw_Spectra_Intensity'] = data['Raw_Spectra_Intensity'].apply(np.array)
