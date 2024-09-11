@@ -93,11 +93,10 @@ if data is not None:
     data['Raw_Spectra_Intensity'] = data['Raw_Spectra_Intensity'].apply(np.array)
     data['Normalized_Spectra_Intensity'] = data['Raw_Spectra_Intensity'].apply(lambda x: x / max(x))
 
-    columns_to_display = ["Formula", "IUPAC chemical name"]
-    data = data[columns_to_display]
+    st.write("Available Columns in DataFrame:", data.columns)
 
     # Preview the dataframe with excluded columns
-    st.write("Data Preview (excluding InChi Code, inchikey, and spectra columns):")
+    st.write("Data Preview")
     st.dataframe(data)  # Shows all rows, but without the excluded columns
 
     # Select SMILES for molecules you want to highlight
