@@ -93,12 +93,15 @@ if data is not None:
     data['Raw_Spectra_Intensity'] = data['Raw_Spectra_Intensity'].apply(np.array)
     data['Normalized_Spectra_Intensity'] = data['Raw_Spectra_Intensity'].apply(lambda x: x / max(x))
 
-    columns_to_display = ["Formula", "IUPAC chemical name"]
-    data = data[columns_to_display]
-
-    # Display the first few rows of the data
-    st.write("Here is a preview of your data:")
+    # Preview the dataframe to ensure data is loaded correctly
     st.write(data.head())
+
+
+
+
+
+
+    
 
     # Select SMILES for molecules you want to highlight
     unique_smiles = data['SMILES'].unique()
