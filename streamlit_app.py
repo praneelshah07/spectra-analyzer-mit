@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.style import use
 use('fast')
 import json
+import random
 
 # Set up the Streamlit app
 st.title("Spectra Visualization App")
@@ -25,6 +26,10 @@ if uploaded_file is not None:
     # Preview the dataframe to ensure data is loaded correctly
     st.write(data.head())
 
+    # Select SMILES for molecules you want to highlight
+    unique_smiles = data['SMILES'].unique()
+    selected_smiles = st.multiselect('Select molecules by SMILES to highlight:', unique_smiles)
+
     # Initialize plot with adjusted DPI for better resolution
     fig, ax = plt.subplots(figsize=(16, 6.5), dpi=100)
 
@@ -32,17 +37,22 @@ if uploaded_file is not None:
     wavenumber = np.arange(4000, 500, -1)
     wavelength = 10000 / wavenumber  # in microns
 
-    # Plot the spectra with correct opacity
-    target_spectra = np.array([])  # Initialize as an empty array
-    for smiles, spectra in data[['SMILES', 'Normalized_Spectra_Intensity']].values:
-        if smiles == 'C':
-            target_spectra = spectra  # Identify target spectra (CH$_4$)
-        else:
-            ax.fill_between(wavelength, 0, spectra, color="k", alpha=0.01)  # Ensure low opacity
+    # Color palette for highlighted spectra
+    color_palette = ['r', 'g', 'b', 'c', 'm', 'y']  # Add more colors if needed
+    random.shuffle(color_palette)  # Shuffle colors to randomize highlights
 
-    # Highlight the target spectrum (CH$_4$) in red
-    if target_spectra.size > 0:  # Check if target_spectra is not empty
-        ax.fill_between(wavelength, 0, target_spectra, color="r", alpha=0.5, label="CH$_4$")
+    # Plot the spectra
+    target_spectra = {}  # Store selected spectra for highlighting
+    for smiles, spectra in data[['SMILES', 'Normalized_Spectra_Intensity']].values:
+        if smiles in selected_smiles:
+            target_spectra[smiles] = spectra  # Store for highlighting later
+        else:
+            ax.fill_between(wavelength, 0, spectra, color="k", alpha=0.01)  # Plot all other spectra
+
+    # Highlight the selected spectra with different colors
+    for i, smiles in enumerate(target_spectra):
+        ax.fill_between(wavelength, 0, target_spectra[smiles], color=color_palette[i % len(color_palette)], 
+                        alpha=0.5, label=f"{smiles}")
 
     # Customize plot axes and ticks
     ax.set_xscale('log')
@@ -65,7 +75,8 @@ if uploaded_file is not None:
     ax.set_ylabel("Absorbance (Normalized to 1)", fontsize=22)
 
     # Show legend
-    ax.legend()
+    if selected_smiles:
+        ax.legend()
 
     # Display the plot in Streamlit
     st.pyplot(fig)
