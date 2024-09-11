@@ -14,7 +14,7 @@ from scipy.cluster.hierarchy import linkage
 import requests
 
 # Preload ZIP file from GitHub and extract CSV inside it
-ZIP_URL = 'https://raw.githubusercontent.com/praneelshah07/MIT-Project/main/ASM_Vapor_Spectra 2 (editted).zip'
+ZIP_URL = 'https://raw.githubusercontent.com/praneelshah07/MIT-Project/main/ASM_Vapor_Spectra.csv.zip'
 
 def load_data_from_zip(zip_url):
     try:
@@ -88,27 +88,20 @@ if uploaded_file is not None:
 
 # Check if data exists (either preloaded or uploaded)
 if data is not None:
-    # Strip whitespace from column names
-    data.columns = data.columns.str.strip()
-
-    # Specify the columns you want to display
-    columns_to_display = ["Formula", "IUPAC chemical name", "Molecular Weight"]
-
-    # Filter to display only the specified columns
-    available_columns = [col for col in columns_to_display if col in data.columns]
-
-    if available_columns:
-        display_data = data[available_columns]
-        # Show the filtered dataframe
-        st.write("Data Preview with selected columns:")
-        st.dataframe(display_data)
-    else:
-        st.error("The specified columns do not exist in the data.")
-    
     # Convert JSON string to lists and normalize the spectra
     data['Raw_Spectra_Intensity'] = data['Raw_Spectra_Intensity'].apply(json.loads)
     data['Raw_Spectra_Intensity'] = data['Raw_Spectra_Intensity'].apply(np.array)
     data['Normalized_Spectra_Intensity'] = data['Raw_Spectra_Intensity'].apply(lambda x: x / max(x))
+
+    # Preview the dataframe to ensure data is loaded correctly
+    st.write(data.head())
+
+
+
+
+
+
+    
 
     # Select SMILES for molecules you want to highlight
     unique_smiles = data['SMILES'].unique()
@@ -151,3 +144,29 @@ if data is not None:
                 ax.text(peak_wavelength, peak_intensity + 0.05, f'{round(peak_wavelength, 1)}', 
                         fontsize=10, ha='center', color=color_palette[i % len(color_palette)])
 
+    # Customize plot axes and ticks
+    ax.set_xscale('log')
+    ax.set_xlim([2.5, 20])
+
+    major_ticks = [3, 4, 5, 6, 7, 8, 9, 11, 12, 15, 20]
+    ax.set_xticks(major_ticks, minor=False)
+
+    ax.tick_params(axis="x", labelsize=16)
+    ax.tick_params(axis="y", labelsize=16)
+
+    ax.set_xticks([3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 20])
+    ax.set_xticklabels(["3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "15", "20"])
+
+    ax.tick_params(direction="in",
+                   labelbottom=True, labeltop=False, labelleft=True, labelright=False,
+                   bottom=True, top=True, left=True, right=True)
+
+    ax.set_xlabel("Wavelength ($\mu$m)", fontsize=22)
+    ax.set_ylabel("Absorbance (Normalized to 1)", fontsize=22)
+
+    # Show legend
+    if selected_smiles:
+        ax.legend()
+
+    # Display the plot in Streamlit
+    st.pyplot(fig)
