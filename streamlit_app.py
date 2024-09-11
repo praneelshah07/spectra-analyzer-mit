@@ -86,6 +86,9 @@ if uploaded_file is not None:
         data = pd.read_csv(uploaded_file)
         st.write("Using uploaded CSV file data.")
 
+# Preview the dataframe to ensure data is loaded correctly
+    st.write(data.head())
+
 # Check if data exists (either preloaded or uploaded)
 if data is not None:
     # Convert JSON string to lists and normalize the spectra
