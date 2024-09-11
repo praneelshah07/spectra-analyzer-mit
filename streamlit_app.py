@@ -6,6 +6,7 @@ from matplotlib.style import use
 use('fast')
 import json
 import random
+from scipy.signal import find_peaks
 
 # Set up the Streamlit app
 st.title("Spectra Visualization App")
@@ -49,10 +50,21 @@ if uploaded_file is not None:
         else:
             ax.fill_between(wavelength, 0, spectra, color="k", alpha=0.01)  # Plot all other spectra
 
-    # Highlight the selected spectra with different colors
+    # Highlight the selected spectra with different colors and annotate peaks
     for i, smiles in enumerate(target_spectra):
-        ax.fill_between(wavelength, 0, target_spectra[smiles], color=color_palette[i % len(color_palette)], 
+        spectra = target_spectra[smiles]
+        ax.fill_between(wavelength, 0, spectra, color=color_palette[i % len(color_palette)], 
                         alpha=0.5, label=f"{smiles}")
+        
+        # Detect peaks in the spectra
+        peaks, _ = find_peaks(spectra, height=0.05)  # You can adjust the height parameter to control sensitivity
+
+        # Annotate the peaks with labels
+        for peak in peaks:
+            peak_wavelength = wavelength[peak]
+            peak_intensity = spectra[peak]
+            ax.text(peak_wavelength, peak_intensity + 0.05, f'{round(peak_wavelength, 1)}', 
+                    fontsize=10, ha='center', color=color_palette[i % len(color_palette)])
 
     # Customize plot axes and ticks
     ax.set_xscale('log')
