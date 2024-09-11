@@ -55,7 +55,7 @@ if data is not None:
     st.write("Using preloaded data from GitHub zip file.")
 
 # File uploader for manual CSV or ZIP file
-uploaded_file = st.file_uploader("Choose a CSV or ZIP file", type=["csv", "zip"])
+uploaded_file = st.file_uploader("If you would like to enter another dataset, insert it here", type=["csv", "zip"])
 
 # If a file is uploaded, it will override the preloaded data
 if uploaded_file is not None:
