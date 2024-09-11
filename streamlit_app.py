@@ -48,7 +48,6 @@ def load_data_from_zip(zip_url):
 
 # Set up the Streamlit app
 st.title("Spectra Visualization App")
-st.write("Upload your chemical data in CSV format or use the preloaded data.")
 
 # Try to load data from the zip file on GitHub
 data = load_data_from_zip(ZIP_URL)
