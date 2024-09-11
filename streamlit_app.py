@@ -93,15 +93,12 @@ if data is not None:
     data['Raw_Spectra_Intensity'] = data['Raw_Spectra_Intensity'].apply(np.array)
     data['Normalized_Spectra_Intensity'] = data['Raw_Spectra_Intensity'].apply(lambda x: x / max(x))
 
-    # Preview the dataframe to ensure data is loaded correctly
-    st.write(data.head())
+    # Drop unnecessary columns (InChi Code, inchikey, and spectra data)
+    display_data = data.drop(columns=['InChi Code', 'inchikey', 'Raw_Spectra_Intensity', 'Normalized_Spectra_Intensity'])
 
-
-
-
-
-
-    
+    # Preview the dataframe with excluded columns
+    st.write("Data Preview (excluding InChi Code, inchikey, and spectra columns):")
+    st.dataframe(display_data)  # Shows all rows, but without the excluded columns
 
     # Select SMILES for molecules you want to highlight
     unique_smiles = data['SMILES'].unique()
