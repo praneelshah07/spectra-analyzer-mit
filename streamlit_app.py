@@ -32,7 +32,16 @@ if uploaded_file is not None:
     selected_smiles = st.multiselect('Select molecules by SMILES to highlight:', unique_smiles)
 
     # Add a checkbox to enable or disable peak finding
-    peak_finding_enabled = st.checkbox('Enable Peak Finding and Labeling', value=False)
+    peak_finding_enabled = st.checkbox('Enable Key Bond Peak Labeling', value=True)
+
+    # Known key bond absorption wavelengths (in microns)
+    bond_wavelengths = {
+        'C-H': 3.4,   # Example: C-H bond absorption near 3.4 microns
+        'C=O': 5.8,   # Example: C=O bond absorption near 5.8 microns
+        'O-H': 2.9,   # Example: O-H bond absorption near 2.9 microns
+        'C-O': 9.6    # Example: C-O bond absorption near 9.6 microns
+    }
+    tolerance = 0.1  # Tolerance for matching peaks to bond wavelengths
 
     # Initialize plot with adjusted DPI for better resolution
     fig, ax = plt.subplots(figsize=(16, 6.5), dpi=100)
@@ -53,20 +62,27 @@ if uploaded_file is not None:
         else:
             ax.fill_between(wavelength, 0, spectra, color="k", alpha=0.01)  # Plot all other spectra
 
-    # Highlight the selected spectra with different colors and annotate peaks if enabled
+    # Highlight the selected spectra with different colors and annotate key peaks if enabled
     for i, smiles in enumerate(target_spectra):
         spectra = target_spectra[smiles]
         ax.fill_between(wavelength, 0, spectra, color=color_palette[i % len(color_palette)], 
                         alpha=0.5, label=f"{smiles}")
-        
-        # If peak finding is enabled, find and annotate peaks
+
+        # If peak finding is enabled, check for key bond wavelengths
         if peak_finding_enabled:
             peaks, _ = find_peaks(spectra, height=0.05)  # Adjust height parameter for sensitivity
-            for peak in peaks:
-                peak_wavelength = wavelength[peak]
-                peak_intensity = spectra[peak]
-                ax.text(peak_wavelength, peak_intensity + 0.05, f'{round(peak_wavelength, 1)}', 
-                        fontsize=10, ha='center', color=color_palette[i % len(color_palette)])
+            
+            # Iterate over the known bond wavelengths to label only those peaks
+            for bond, bond_wavelength in bond_wavelengths.items():
+                # Find the closest peak to the known bond wavelength
+                closest_peak = np.argmin(np.abs(wavelength[peaks] - bond_wavelength))
+                peak_wavelength = wavelength[peaks[closest_peak]]
+                peak_intensity = spectra[peaks[closest_peak]]
+                
+                # Only label the peak if it's within the tolerance range
+                if np.abs(peak_wavelength - bond_wavelength) <= tolerance:
+                    ax.text(peak_wavelength, peak_intensity + 0.05, f'{bond} ({round(peak_wavelength, 1)})', 
+                            fontsize=10, ha='center', color=color_palette[i % len(color_palette)])
 
     # Customize plot axes and ticks
     ax.set_xscale('log')
