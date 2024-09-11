@@ -97,7 +97,7 @@ if data is not None:
     available_columns = data.columns
 
     # List of columns to drop (only drop them if they exist in the DataFrame)
-    columns_to_drop = ['InChI Code', 'inchikey', 'Produced by life', 'REF for life', 'Raw_Spectra_Intensity', 'Normalized_Spectra_Intensity']
+    columns_to_drop = ['InChl Code', 'inchikey', 'Produced by life', 'REF for life', 'Raw_Spectra_Intensity', 'Normalized_Spectra_Intensity']
 
     # Filter out columns that exist in the DataFrame
     columns_to_drop = [col for col in columns_to_drop if col in available_columns]
