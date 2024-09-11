@@ -1,8 +1,11 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import plotly.graph_objs as go
+import matplotlib.pyplot as plt
+from matplotlib.style import use
+use('fast')
 import json
+import random
 
 # Set up the Streamlit app
 st.title("Spectra Visualization App")
@@ -27,27 +30,53 @@ if uploaded_file is not None:
     unique_smiles = data['SMILES'].unique()
     selected_smiles = st.multiselect('Select molecules by SMILES to highlight:', unique_smiles)
 
+    # Initialize plot with adjusted DPI for better resolution
+    fig, ax = plt.subplots(figsize=(16, 6.5), dpi=100)
+
     # Calculate wavelength
     wavenumber = np.arange(4000, 500, -1)
     wavelength = 10000 / wavenumber  # in microns
 
-    # Create Plotly traces
-    traces = []
+    # Color palette for highlighted spectra
+    color_palette = ['r', 'g', 'b', 'c', 'm', 'y']  # Add more colors if needed
+    random.shuffle(color_palette)  # Shuffle colors to randomize highlights
+
+    # Plot the spectra
+    target_spectra = {}  # Store selected spectra for highlighting
     for smiles, spectra in data[['SMILES', 'Normalized_Spectra_Intensity']].values:
         if smiles in selected_smiles:
-            traces.append(go.Scatter(x=wavelength, y=spectra, mode='lines', name=f'{smiles}', line=dict(width=2)))
+            target_spectra[smiles] = spectra  # Store for highlighting later
         else:
-            traces.append(go.Scatter(x=wavelength, y=spectra, mode='lines', line=dict(color='black', width=0.5, opacity=0.1)))
+            ax.fill_between(wavelength, 0, spectra, color="k", alpha=0.01)  # Plot all other spectra
 
-    # Layout settings for the plot
-    layout = go.Layout(
-        xaxis=dict(title="Wavelength (μm)", type='log', range=[np.log10(2.5), np.log10(20)]),
-        yaxis=dict(title="Absorbance (Normalized to 1)"),
-        showlegend=True,
-    )
+    # Highlight the selected spectra with different colors
+    for i, smiles in enumerate(target_spectra):
+        ax.fill_between(wavelength, 0, target_spectra[smiles], color=color_palette[i % len(color_palette)], 
+                        alpha=0.5, label=f"{smiles}")
 
-    # Create the figure
-    fig = go.Figure(data=traces, layout=layout)
+    # Customize plot axes and ticks
+    ax.set_xscale('log')
+    ax.set_xlim([2.5, 20])
 
-    # Display the interactive plot in Streamlit
-    st.plotly_chart(fig)
+    major_ticks = [3, 4, 5, 6, 7, 8, 9, 11, 12, 15, 20]
+    ax.set_xticks(major_ticks, minor=False)
+
+    ax.tick_params(axis="x", labelsize=16)
+    ax.tick_params(axis="y", labelsize=16)
+
+    ax.set_xticks([3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 20])
+    ax.set_xticklabels(["3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "15", "20"])
+
+    ax.tick_params(direction="in",
+                   labelbottom=True, labeltop=False, labelleft=True, labelright=False,
+                   bottom=True, top=True, left=True, right=True)
+
+    ax.set_xlabel("Wavelength ($\mu$m)", fontsize=22)
+    ax.set_ylabel("Absorbance (Normalized to 1)", fontsize=22)
+
+    # Show legend
+    if selected_smiles:
+        ax.legend()
+
+    # Display the plot in Streamlit
+    st.pyplot(fig)
