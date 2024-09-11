@@ -7,6 +7,8 @@ use('fast')
 import json
 import random
 from scipy.signal import find_peaks
+from scipy.spatial.distance import pdist, squareform
+from fastcluster import linkage
 
 # Set up the Streamlit app
 st.title("Spectra Visualization App")
@@ -94,3 +96,46 @@ if uploaded_file is not None:
 
     # Display the plot in Streamlit
     st.pyplot(fig)
+
+    # **Sonogram addition** based on the selected molecules
+    if selected_smiles:
+        st.subheader("Sonogram for Selected Molecules")
+
+        # Prepare the sonogram data for the selected molecules
+        selected_data = data[data['SMILES'].isin(selected_smiles)]
+        normalized_spectra = np.array(selected_data['Normalized_Spectra_Intensity'].tolist())
+
+        # Compute the distance matrix
+        dist_mat = squareform(pdist(normalized_spectra))
+
+        # Compute hierarchical clustering to reorder rows (optional)
+        def seriation(Z, N, cur_index):
+            if cur_index < N:
+                return [cur_index]
+            else:
+                left = int(Z[cur_index - N, 0])
+                right = int(Z[cur_index - N, 1])
+                return seriation(Z, N, left) + seriation(Z, N, right)
+
+        def compute_serial_matrix(dist_mat, method="ward"):
+            N = len(dist_mat)
+            flat_dist_mat = squareform(dist_mat)
+            res_linkage = linkage(flat_dist_mat, method=method)
+            res_order = seriation(res_linkage, N, N + N - 2)
+            seriated_dist = np.zeros((N, N))
+            a, b = np.triu_indices(N, k=1)
+            seriated_dist[a, b] = dist_mat[res_order, :][:, res_order][a, b]
+            seriated_dist[b, a] = seriated_dist[a, b]
+            return seriated_dist, res_order, res_linkage
+
+        ordered_dist_mat, res_order, res_linkage = compute_serial_matrix(dist_mat, "ward")
+
+        # Sonogram plot
+        fig2, ax2 = plt.subplots(figsize=(12, 8))
+
+        ratio = int(len(normalized_spectra[0]) / len(normalized_spectra))  # Calculate the aspect ratio
+        ax2.imshow(np.array(normalized_spectra)[res_order], aspect=ratio, extent=[4000, 500, 0, len(ordered_dist_mat)])
+
+        ax2.set_xlabel("Wavenumber")
+        ax2.set_ylabel("Molecules")
+        st.pyplot(fig2)
