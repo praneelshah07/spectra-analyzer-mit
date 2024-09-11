@@ -1,7 +1,13 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.style import use
+use('fast')
 import plotly.express as px
 from scipy.signal import find_peaks, savgol_filter
+from scipy.cluster.hierarchy import linkage
+
 
 st.title("Spectra Visualization App")
 st.write("Upload your chemical data in CSV format to start analyzing.")
