@@ -31,6 +31,9 @@ if uploaded_file is not None:
     unique_smiles = data['SMILES'].unique()
     selected_smiles = st.multiselect('Select molecules by SMILES to highlight:', unique_smiles)
 
+    # Add a checkbox to enable or disable peak finding
+    peak_finding_enabled = st.checkbox('Enable Peak Finding and Labeling', value=False)
+
     # Initialize plot with adjusted DPI for better resolution
     fig, ax = plt.subplots(figsize=(16, 6.5), dpi=100)
 
@@ -50,21 +53,20 @@ if uploaded_file is not None:
         else:
             ax.fill_between(wavelength, 0, spectra, color="k", alpha=0.01)  # Plot all other spectra
 
-    # Highlight the selected spectra with different colors and annotate peaks
+    # Highlight the selected spectra with different colors and annotate peaks if enabled
     for i, smiles in enumerate(target_spectra):
         spectra = target_spectra[smiles]
         ax.fill_between(wavelength, 0, spectra, color=color_palette[i % len(color_palette)], 
                         alpha=0.5, label=f"{smiles}")
         
-        # Detect peaks in the spectra
-        peaks, _ = find_peaks(spectra, height=0.05)  # You can adjust the height parameter to control sensitivity
-
-        # Annotate the peaks with labels
-        for peak in peaks:
-            peak_wavelength = wavelength[peak]
-            peak_intensity = spectra[peak]
-            ax.text(peak_wavelength, peak_intensity + 0.05, f'{round(peak_wavelength, 1)}', 
-                    fontsize=10, ha='center', color=color_palette[i % len(color_palette)])
+        # If peak finding is enabled, find and annotate peaks
+        if peak_finding_enabled:
+            peaks, _ = find_peaks(spectra, height=0.05)  # Adjust height parameter for sensitivity
+            for peak in peaks:
+                peak_wavelength = wavelength[peak]
+                peak_intensity = spectra[peak]
+                ax.text(peak_wavelength, peak_intensity + 0.05, f'{round(peak_wavelength, 1)}', 
+                        fontsize=10, ha='center', color=color_palette[i % len(color_palette)])
 
     # Customize plot axes and ticks
     ax.set_xscale('log')
