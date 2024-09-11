@@ -98,7 +98,7 @@ if data is not None:
 
     # Preview the dataframe with excluded columns
     st.write("Data Preview (excluding InChi Code, inchikey, and spectra columns):")
-    st.dataframe(columns_to_display)  # Shows all rows, but without the excluded columns
+    st.dataframe(data)  # Shows all rows, but without the excluded columns
 
     # Select SMILES for molecules you want to highlight
     unique_smiles = data['SMILES'].unique()
