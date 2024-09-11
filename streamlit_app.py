@@ -91,9 +91,6 @@ if data is not None:
     # Strip whitespace from column names
     data.columns = data.columns.str.strip()
 
-    # Display available column names for debugging purposes
-    st.write("Available Columns in DataFrame:", data.columns)
-
     # Specify the columns you want to display
     columns_to_display = ["Formula", "IUPAC chemical name", "Molecular Weight"]
 
